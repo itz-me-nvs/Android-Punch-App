@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 30
+    }
+
+     signingConfigs {
+        release {
+            storeFile file("./punch-app-key.jks")
+            storePassword "punch001590"
+            keyAlias "punch-alias"
+            keyPassword "punch001590"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+
+}
+
+dependencies {
+   implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+   implementation 'com.squareup.okhttp3:okhttp:4.9.2'
+   implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+   implementation 'com.google.code.gson:gson:2.8.9'
+
+   implementation 'com.squareup.okhttp3:logging-interceptor:4.9.2'
+}
