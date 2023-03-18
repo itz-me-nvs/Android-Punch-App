@@ -21,7 +21,7 @@ public class ApiClient {
 
     public interface doGETModel {
         @GET("exec")
-        Call<AppScriptResponse> getData(@Query("value") String val);
+        Call<AppScriptResponse> getData(@Query("value") String val, @Query("user") String user);
     }
 
     public class results {
@@ -51,7 +51,7 @@ public class ApiClient {
     }
 
     private static Retrofit retrofit;
-    private static final String PUNCH_BASE_URL = "https://script.google.com/macros/s/AKfycbwtQz6idpS0bi3R_ua7lFEgI_D9tksFdodxc0jYE60Z5qyYGGhDA3Dwed6c2Wfg_Ibx/";
+    private static final String PUNCH_BASE_URL = "https://script.google.com/macros/s/AKfycbzC-P-Ld-9-gpkfxo1nfv6DIH_KTe-n20YSRvzL9Q0kDEWiyDYQ18E11NndckBtsqWurw/";
 
     private doGETModel doget;
 
@@ -64,8 +64,8 @@ public class ApiClient {
         doget = retrofit.create(doGETModel.class);
     }
 
-    public Call<AppScriptResponse> getUser(String val) {
-        Call<AppScriptResponse> call = doget.getData(val);
+    public Call<AppScriptResponse> getUser(String val, String user) {
+        Call<AppScriptResponse> call = doget.getData(val, user);
         return call;
     }
 }

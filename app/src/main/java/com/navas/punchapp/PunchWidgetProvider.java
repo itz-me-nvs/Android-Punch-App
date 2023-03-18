@@ -31,15 +31,10 @@ import java.util.Date;
 
 public class PunchWidgetProvider extends AppWidgetProvider {
 
-    private final static String WIDGET_ACTION = "BUTTON_CLICK";
-    private static final String PREFS_NAME = "com.navas.punchapp.PunchWidgetProvider";
-    private static final String KEY_IS_CHECKED_IN = "isCheckedIn";
-
-    boolean isCheckedIn = false;
-
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-
+        PunchApplication PunchApp = ((PunchApplication) context.getApplicationContext());
+        String WIDGET_ACTION = PunchApp.WIDGET_ACTION;
         for (int appWidgetId : appWidgetIds) {
 
             RemoteViews buttonView = new RemoteViews(context.getPackageName(), R.layout.punch_layout);
@@ -53,7 +48,7 @@ public class PunchWidgetProvider extends AppWidgetProvider {
                     R.id.widget_punch, pendingIntent);
 
             // Set the text of button based on the current check in/out status
-            if (isCheckedIn) {
+            if (PunchApp.isCheckedIn) {
                 buttonView.setTextViewText(R.id.widget_punch, "Check Out");
             } else {
                 buttonView.setTextViewText(R.id.widget_punch, "Check In");
@@ -69,9 +64,8 @@ public class PunchWidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
 
         super.onReceive(context, intent);
-
-        if (intent.getAction().equals(WIDGET_ACTION)) {
-
+        PunchApplication PunchApp = ((PunchApplication) context.getApplicationContext());
+        if (intent.getAction().equals(PunchApp.WIDGET_ACTION)) {
             // Create a SimpleDateFormat object with the desired format
             SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm");
 
@@ -81,8 +75,12 @@ public class PunchWidgetProvider extends AppWidgetProvider {
             String formattedTime = timeFormat.format(currentTime);
             // Do something when the button is clicked
 
+            // Initialize the Shared preferences instance
+            SharedPreferences prefs = context.getSharedPreferences(PunchApp.PREFS_NAME, Context.MODE_PRIVATE);
+
+            String currentUser = prefs.getString(PunchApp.USER, "");
             ApiClient apiService = new ApiClient();
-            apiService.getUser("TIME=" + formattedTime.toString()).enqueue(
+            apiService.getUser("TIME=" + formattedTime.toString(), currentUser).enqueue(
                     new Callback<ApiClient.AppScriptResponse>() {
                         @Override
                         public void onResponse(Call<ApiClient.AppScriptResponse> call,
@@ -107,19 +105,18 @@ public class PunchWidgetProvider extends AppWidgetProvider {
                     });
 
             // Load the last isCheckedIn value from SharedPreferences
-            SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-            isCheckedIn = !prefs.getBoolean(KEY_IS_CHECKED_IN, false);
+            PunchApp.isCheckedIn = !prefs.getBoolean(PunchApp.KEY_IS_CHECKED_IN, false);
 
             // Update the SharedPreferences with the new isCheckedIn value
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean(KEY_IS_CHECKED_IN, isCheckedIn);
+            editor.putBoolean(PunchApp.KEY_IS_CHECKED_IN, PunchApp.isCheckedIn);
             editor.apply();
 
             // Set the text of button based on the current check in/out status
             RemoteViews buttonView = new RemoteViews(context.getPackageName(),
                     R.layout.punch_layout);
             buttonView.setTextViewText(R.id.widget_punch,
-                    isCheckedIn ? "CHECK OUT" : "CHECK IN");
+                    PunchApp.isCheckedIn ? "CHECK OUT" : "CHECK IN");
 
             ComponentName watchWidget = new ComponentName(context, PunchWidgetProvider.class);
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
